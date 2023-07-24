@@ -27,7 +27,7 @@ let browser
 
 (async () => { 
     browser = await puppeteer.launch({
-        headless: true,
+        headless : true,
         ignoreHTTPSErrors: true,
         args: [
             "--no-sandbox",
@@ -182,7 +182,7 @@ async function loadPage(context, url, js = false) {
     });
     if (js) {
         page.setJavaScriptEnabled(true)
-        await page.goto(url, { waitUntil: 'networkidle0' });
+        await page.goto(url, {waitUntil: 'load', timeout: 0});
     } else { 
         await page.goto(url);
     }
