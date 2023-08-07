@@ -181,11 +181,11 @@ async function loadPage(context, url, js = false) {
         'Accept-Language': 'en-US,en;q=0.5'
     });
     if (js) {
-        console.log(`Javascript enabled for = ${page.title()}`);
+        console.log(`Javascript enabled for = ${await page.title()}`);
         page.setJavaScriptEnabled(true)
         await page.goto(url, {waitUntil: 'load', timeout: 0});
     } else { 
-        console.log(`Javascript not enabled for = ${page.title()}`);
+        console.log(`Javascript not enabled for = ${await page.title()}`);
         await page.goto(url);
     }
     console.log(await page.title())
@@ -193,7 +193,7 @@ async function loadPage(context, url, js = false) {
 }
 
 async function ssr(url, js = false) {
-    console.log(`No of Contexts opened => ${browser.browserContexts()}`);
+    console.log(`No of Contexts opened => ${browser.browserContexts().length}`);
     const context = await browser.createIncognitoBrowserContext();
     const page = await loadPage(context, url, js)
     const html = await page.content(); // serialized HTML of page DOM.
