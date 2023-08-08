@@ -181,11 +181,11 @@ async function loadPage(context, url, js = false) {
         'Accept-Language': 'en-US,en;q=0.5'
     });
     if (js) {
-        console.log(`Javascript enabled for = ${await page.title()}`);
+        console.log(`Javascript enabled`);
         page.setJavaScriptEnabled(true)
-        await page.goto(url, {waitUntil: 'load', timeout: 0});
+        await page.goto(url, {waitUntil: 'load', timeout: 50000});
     } else { 
-        console.log(`Javascript not enabled for = ${await page.title()}`);
+        console.log(`Javascript not enabled`);
         await page.goto(url);
     }
     console.log(await page.title())
