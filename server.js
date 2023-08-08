@@ -25,15 +25,15 @@ const userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:77.0) Gecko/
 
 let browser
 
-(async () => { 
+(async () => {
     browser = await puppeteer.launch({
-        headless : true,
+        headless: true,
         ignoreHTTPSErrors: true,
         args: [
             "--no-sandbox",
             "--disable-gpu",
         ]
-    }); 
+    });
     fs.mkdir(screenshotDir, { recursive: true }, (err) => {
         if (err) throw err;
     });
@@ -42,7 +42,7 @@ let browser
         if (err) throw err;
     });
     console.log("pdf dir created")
-    
+
 })();
 
 function relative(path) {
@@ -59,7 +59,7 @@ app.use(express.static(relative('public')));
 
 app.get('/', (req, res) => {
     res.send('headless chrome api is ready to serve')
-}) 
+})
 
 app.get('/generate/:template', (req, res) => {
     const template = req.params.template
@@ -95,7 +95,7 @@ app.post('/content', async (req, res) => {
     } catch (error) {
         console.error(error)
         res.status(500).send(error)
-    }  
+    }
 })
 
 app.post('/screenshot', async (req, res) => {
@@ -121,7 +121,7 @@ app.post('/screenshot', async (req, res) => {
             context.close()
             const filename = screenshotData.path
             res.sendFile(filename)
-            res.on('finish', function() {
+            res.on('finish', function () {
                 removeFile(filename)
             });
         } else {
@@ -130,7 +130,7 @@ app.post('/screenshot', async (req, res) => {
     } catch (error) {
         console.error(error)
         res.status(500).send(error)
-    }  
+    }
 })
 
 app.post('/pdf', async (req, res) => {
@@ -138,7 +138,7 @@ app.post('/pdf', async (req, res) => {
     const js = req.body.js
     const date = Date.now()
     var landscape = req.body.landscape
-    
+
     let pdfData = {
         path: pdfDir + date + '.pdf',
         format: 'A4',
@@ -154,7 +154,7 @@ app.post('/pdf', async (req, res) => {
             context.close()
             const filename = pdfData.path
             res.sendFile(filename)
-            res.on('finish', function() {
+            res.on('finish', function () {
                 removeFile(filename)
             });
         } else {
@@ -163,7 +163,7 @@ app.post('/pdf', async (req, res) => {
     } catch (error) {
         console.error(error)
         res.status(500).send(error)
-    } 
+    }
 })
 
 function removeFile(filename) {
@@ -183,8 +183,8 @@ async function loadPage(context, url, js = false) {
     if (js) {
         console.log(`Javascript enabled`);
         page.setJavaScriptEnabled(true)
-        await page.goto(url, {waitUntil: 'load', timeout: 50000});
-    } else { 
+        await page.goto(url, { waitUntil: 'load', timeout: 50000 });
+    } else {
         console.log(`Javascript not enabled`);
         await page.goto(url);
     }
@@ -193,13 +193,26 @@ async function loadPage(context, url, js = false) {
 }
 
 async function ssr(url, js = false) {
-    console.log(`No of Contexts opened => ${browser.browserContexts().length}`);
-    const context = await browser.createIncognitoBrowserContext();
-    const page = await loadPage(context, url, js)
-    const html = await page.content(); // serialized HTML of page DOM.
-    await page.close();
-    await context.close();
-    return html;
+    let page = null;
+    let context = null;
+    try {
+        console.log(`No of Contexts opened => ${browser.browserContexts().length}`);
+        context = await browser.createIncognitoBrowserContext();
+        page = await loadPage(context, url, js)
+        const html = await page.content(); // serialized HTML of page DOM.
+        return html;
+    } catch (err) {
+        throw err
+    } finally {
+        if (page) {
+            await page.close();
+            console.log("page closed");
+        }
+        if (context) {
+            await context.close();
+            console.log("context closed");
+        }
+    }
 }
 
 
